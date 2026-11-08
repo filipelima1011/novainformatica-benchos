@@ -1,0 +1,4 @@
+# NOVA PC REPAIR - manutenção Windows e Linux
+efibootmgr os-prober grub-customizer timeshift
+chkrootkit rkhunter clamav clamtk
+chntpw xorriso genisoimage lnav

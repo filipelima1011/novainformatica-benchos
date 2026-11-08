@@ -1,0 +1,92 @@
+#!/bin/bash
+# ============================================================
+#  Nova Informática BenchOS - Instaladores Opcionais
+#  Programas pagos, ou cuja licença não permite embutir na ISO.
+#  Nenhum link de download é inventado: o script abre o SITE
+#  OFICIAL; depois de baixar, ele instala o arquivo escolhido.
+#  Uso: sudo nova-opcionais   (já há atalho no menu)
+# ============================================================
+set -u
+DESTINO=/opt/nova-ferramentas
+LOG=/var/log/benchos-opcionais.log
+USUARIO="${SUDO_USER:-$(logname 2>/dev/null || echo root)}"
+
+[ "$(id -u)" -eq 0 ] || { echo "Execute com: sudo nova-opcionais"; exit 1; }
+mkdir -p "$DESTINO"
+
+# nome | tipo | site oficial ou comando | descrição
+PROGRAMAS=(
+  "OCCT|site|https://www.ocbase.com|Stress e estabilidade do sistema (licença paga para uso comercial)"
+  "Geekbench|site|https://www.geekbench.com|Benchmark de CPU e GPU (licença paga para uso comercial)"
+  "R-Studio|site|https://www.r-studio.com|Recuperação de dados profissional (pago)"
+  "FurMark 2|site|https://www.geeks3d.com/furmark/|Stress de placa de vídeo"
+  "GpuTest|site|https://www.geeks3d.com/gputest/|Benchmarks de GPU em OpenGL"
+  "Unigine Superposition|site|https://benchmark.unigine.com|Benchmark 3D de placa de vídeo"
+  "y-cruncher|site|http://www.numberworld.org/y-cruncher/|Stress pesado de CPU e memória"
+  "mprime (Prime95)|site|https://www.mersenne.org/download/|Stress clássico de CPU"
+  "Autopsy|site|https://www.autopsy.com/download/|Análise forense e recuperação avançada"
+  "HardInfo2|site|https://github.com/hardinfo2/hardinfo2/releases|Relatório completo de hardware"
+  "OpenSuperClone|site|https://github.com/ISpillMyDrink/OpenSuperClone|Clonagem de discos com falha"
+  "Ventoy|site|https://www.ventoy.net|Criar pendrive multiboot"
+  "balenaEtcher|site|https://etcher.balena.io|Gravar imagens em pendrive"
+  "RustDesk|site|https://rustdesk.com|Acesso remoto de código aberto"
+  "Arduino IDE 2|site|https://www.arduino.cc/en/software|Versão nova da IDE do Arduino"
+  "Boot-Repair|auto|add-apt-repository -y ppa:yannubuntu/boot-repair && apt-get update && apt-get install -y boot-repair|Reparo automático de GRUB e boot"
+  "PlatformIO|auto|sudo -u $USUARIO pipx install platformio|Programação de microcontroladores"
+  "GreenWithEnvy|auto|flatpak install -y flathub com.leinardi.gwe|Controle de ventoinha e clock NVIDIA"
+)
+
+campo() { echo "$1" | cut -d'|' -f"$2"; }
+
+instalar_arquivo() {   # instalar_arquivo <arquivo> <nome>
+  local arq="$1" nome="$2" pasta
+  pasta="$DESTINO/$(echo "$nome" | tr ' A-Z' '-a-z' | tr -cd 'a-z0-9-')"
+  case "$arq" in
+    *.deb)      apt-get install -y "$arq" ;;
+    *.AppImage) mkdir -p "$pasta" && install -m 755 "$arq" "$pasta/"
+                cat > "/usr/share/applications/nova-opc-$(basename "$pasta").desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=$nome
+Exec=$pasta/$(basename "$arq")
+Icon=application-x-executable
+Categories=X-Nova;
+EOF
+                ;;
+    *.tar.gz|*.tgz|*.tar.xz|*.tar.bz2|*.tar) mkdir -p "$pasta" && tar -xf "$arq" -C "$pasta" ;;
+    *.zip)      mkdir -p "$pasta" && unzip -o -q "$arq" -d "$pasta" ;;
+    *.run)      mkdir -p "$pasta" && cp "$arq" "$pasta/" && (cd "$pasta" && sh "./$(basename "$arq")") ;;
+    *)          echo "Tipo de arquivo não reconhecido: $arq"; return 1 ;;
+  esac
+  echo "Instalado em: $pasta (ou no sistema, se for .deb)"
+}
+
+while true; do
+  MENU=()
+  for i in "${!PROGRAMAS[@]}"; do
+    MENU+=("$i" "$(campo "${PROGRAMAS[$i]}" 1) - $(campo "${PROGRAMAS[$i]}" 4)")
+  done
+  ESC=$(whiptail --title "Nova Informática BenchOS - Instaladores Opcionais" \
+        --menu "Escolha o programa:" 24 100 16 "${MENU[@]}" 3>&1 1>&2 2>&3) || exit 0
+
+  ITEM="${PROGRAMAS[$ESC]}"
+  NOME=$(campo "$ITEM" 1); TIPO=$(campo "$ITEM" 2); ALVO=$(campo "$ITEM" 3)
+
+  if [ "$TIPO" = "auto" ]; then
+    echo ">> Instalando $NOME..." | tee -a "$LOG"
+    bash -c "$ALVO" 2>&1 | tee -a "$LOG"
+  else
+    sudo -u "$USUARIO" xdg-open "$ALVO" >/dev/null 2>&1 &
+    whiptail --msgbox "Abrindo o site oficial do $NOME.\n\nBaixe a versão para Linux (64 bits) e aguarde o download terminar. Depois clique em OK para escolher o arquivo." 12 70
+    PASTA_DL=$(sudo -u "$USUARIO" xdg-user-dir DOWNLOAD 2>/dev/null || echo "/home/$USUARIO/Downloads")
+    ARQS=()
+    while IFS= read -r f; do ARQS+=("$f" ""); done < <(ls -1t "$PASTA_DL" 2>/dev/null | head -15)
+    if [ ${#ARQS[@]} -eq 0 ]; then
+      whiptail --msgbox "Nenhum arquivo encontrado em $PASTA_DL." 8 70; continue
+    fi
+    F=$(whiptail --menu "Arquivo baixado (mais recentes primeiro):" 22 90 14 "${ARQS[@]}" 3>&1 1>&2 2>&3) || continue
+    echo ">> Instalando $NOME a partir de $F" | tee -a "$LOG"
+    instalar_arquivo "$PASTA_DL/$F" "$NOME" 2>&1 | tee -a "$LOG"
+  fi
+  echo; read -rp "Pressione Enter para voltar ao menu..." _
+done

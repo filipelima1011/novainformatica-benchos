@@ -1,0 +1,5 @@
+# Drivers compilados (instalados por último por segurança)
+# rtl8812au-dkms: adaptadores USB Wi-Fi Realtek 8812AU/8821AU
+# (ex.: vários modelos TP-Link Archer T2U/T4U) - a validar na bancada
+dkms linux-headers-generic
+rtl8812au-dkms

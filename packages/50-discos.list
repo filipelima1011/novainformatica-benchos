@@ -1,0 +1,3 @@
+# Teste de SSD e HD
+smartmontools gsmartcontrol nvme-cli hdparm sdparm fio
+kdiskmark gnome-disk-utility e2fsprogs

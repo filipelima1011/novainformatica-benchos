@@ -1,0 +1,5 @@
+# Placa de vídeo - testes, monitoramento e drivers abertos
+mesa-utils mesa-vulkan-drivers vulkan-tools libvulkan1
+glmark2 glmark2-es2 glmark2-wayland vkmark
+nvtop radeontop intel-gpu-tools corectrl
+ubuntu-drivers-common linux-firmware

@@ -1,0 +1,3 @@
+# Rede e Internet
+wireshark nmap iperf3 netcat-openbsd traceroute mtr-tiny ethtool
+bind9-dnsutils whois speedtest-cli net-tools iftop nload

@@ -1,0 +1,4 @@
+Coloque aqui programas de licença livre que não estão no repositório
+do Ubuntu (já extraídos). Tudo nesta pasta vai para /opt/nova-ferramentas.
+Programas pagos (OCCT, R-Studio, Geekbench) NÃO devem ser colocados aqui:
+eles são instalados depois pelo "Instaladores Opcionais".

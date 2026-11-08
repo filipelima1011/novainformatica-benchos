@@ -1,0 +1,4 @@
+# Instalador gráfico (Calamares) e GRUB para instalar em HD/SSD
+calamares
+qml-module-qtquick2 qml-module-qtquick-window2 qml-module-qtquick-controls2
+grub-pc-bin grub-efi-amd64-bin grub2-common efibootmgr

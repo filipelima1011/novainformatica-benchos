@@ -1,0 +1,7 @@
+# Área de trabalho KDE Plasma e idioma português
+kubuntu-desktop
+language-pack-pt language-pack-kde-pt hunspell-pt-br
+firefox firefox-l10n-pt-br
+flatpak plasma-discover-backend-flatpak
+qt5-style-kvantum qt5-style-kvantum-themes
+htop btop filelight ksystemlog kate konsole

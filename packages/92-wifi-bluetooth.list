@@ -1,0 +1,7 @@
+# Wi-Fi, Bluetooth e conexões móveis
+# (Intel, Realtek, MediaTek, Atheros/Qualcomm e Broadcom com driver aberto
+#  funcionam com o kernel + linux-firmware)
+linux-firmware wireless-regdb iw wireless-tools rfkill wpasupplicant
+bluez bluez-obexd bluedevil libspa-0.2-bluetooth
+modemmanager usb-modeswitch
+network-manager-openvpn network-manager-l2tp

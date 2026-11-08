@@ -1,0 +1,48 @@
+#!/bin/bash
+# ============================================================
+#  Nova Informática BenchOS - nova-tema
+#  Alterna entre o tema escuro (padrão) e o claro, trocando cores,
+#  janelas, ícones, estilo dos programas e wallpaper de uma vez.
+#  Uso: nova-tema escuro | nova-tema claro   (há atalhos no menu)
+#  Roda como o usuário comum (não use sudo).
+# ============================================================
+MODO="${1:-}"
+CONF=/etc/benchos/tema.conf
+[ -r "$CONF" ] || { echo "Arquivo $CONF não encontrado."; exit 1; }
+# shellcheck source=/dev/null
+. "$CONF"
+
+case "$MODO" in
+  escuro) P=ESCURO ;;
+  claro)  P=CLARO ;;
+  *) echo "Uso: nova-tema escuro | claro"; exit 1 ;;
+esac
+
+v() { local n="${P}_$1"; echo "${!n}"; }
+CORES=$(v CORES); PLASMA=$(v PLASMA); ICONES=$(v ICONES); AURORAE=$(v AURORAE)
+KVANTUM=$(v KVANTUM); GTK=$(v GTK); WALL=$(v WALLPAPER)
+
+[ -n "$CORES" ]   && plasma-apply-colorscheme "$CORES"
+[ -n "$PLASMA" ]  && plasma-apply-desktoptheme "$PLASMA"
+[ -n "$ICONES" ]  && /usr/lib/x86_64-linux-gnu/libexec/plasma-changeicons "$ICONES" 2>/dev/null
+[ -n "$KVANTUM" ] && kvantummanager --set "$KVANTUM" 2>/dev/null
+if [ -n "$AURORAE" ]; then
+  kwriteconfig5 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.kwin.aurorae
+  kwriteconfig5 --file kwinrc --group org.kde.kdecoration2 --key theme "__aurorae__svg__$AURORAE"
+  qdbus org.kde.KWin /KWin reconfigure >/dev/null 2>&1
+fi
+if [ -n "$GTK" ]; then
+  for f in "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-4.0/settings.ini"; do
+    mkdir -p "$(dirname "$f")"
+    kwriteconfig5 --file "$f" --group Settings --key gtk-theme-name "$GTK"
+    kwriteconfig5 --file "$f" --group Settings --key gtk-icon-theme-name "$ICONES"
+    kwriteconfig5 --file "$f" --group Settings --key gtk-application-prefer-dark-theme \
+      "$([ "$MODO" = escuro ] && echo true || echo false)"
+  done
+fi
+if [ -n "$WALL" ] && [ -f "$WALL" ]; then
+  plasma-apply-wallpaperimage "$WALL"
+  kwriteconfig5 --file kscreenlockerrc --group Greeter --group Wallpaper \
+    --group org.kde.image --group General --key Image "file://$WALL"
+fi
+echo "Tema $MODO aplicado."

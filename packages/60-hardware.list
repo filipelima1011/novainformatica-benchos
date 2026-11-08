@@ -1,0 +1,5 @@
+# NOVA HARDWARE CENTER e Teste de Notebook
+cpu-x inxi lshw hwinfo dmidecode lm-sensors psensor fancontrol
+pciutils usbutils i2c-tools edid-decode hw-probe
+upower acpi powertop fwupd
+evtest guvcview pavucontrol alsa-utils

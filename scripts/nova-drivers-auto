@@ -1,0 +1,48 @@
+#!/bin/bash
+# ============================================================
+#  Nova Informática BenchOS - nova-drivers-auto
+#  Roda a cada inicialização (serviço nova-drivers-auto):
+#   1. Libera Wi-Fi e Bluetooth bloqueados por software.
+#   2. Procura placas que precisam de driver extra (ex.: Broadcom
+#      BCM43xx com driver "wl") e instala o driver guardado na ISO,
+#      SEM internet. Só instala se a placa for detectada.
+# ============================================================
+LOG=/var/log/benchos-drivers.log
+CACHE=/opt/nova-ferramentas/drivers
+
+echo "==== $(date '+%d/%m/%Y %H:%M') ====" >>"$LOG"
+rfkill unblock wifi      2>>"$LOG" || true
+rfkill unblock bluetooth 2>>"$LOG" || true
+
+shopt -s nullglob
+for deb in "$CACHE"/*.deb; do
+  pkg=$(dpkg-deb -f "$deb" Package 2>/dev/null) || continue
+  dpkg -s "$pkg" >/dev/null 2>&1 && { echo "$pkg já instalado" >>"$LOG"; continue; }
+
+  # Lista de dispositivos suportados que o próprio pacote declara
+  padroes=$(dpkg-deb -f "$deb" Modaliases 2>/dev/null \
+            | sed -E 's/[A-Za-z0-9_-]+\(//g; s/\)//g; s/, */\n/g')
+  [ -n "$padroes" ] || continue
+
+  achou=""
+  for arq in /sys/bus/pci/devices/*/modalias /sys/bus/usb/devices/*/modalias; do
+    dev=$(tr 'A-Z' 'a-z' < "$arq")
+    while IFS= read -r p; do
+      [ -n "$p" ] || continue
+      p=$(echo "$p" | tr 'A-Z' 'a-z')
+      # shellcheck disable=SC2053
+      if [[ $dev == $p ]]; then achou="$arq"; break 2; fi
+    done <<< "$padroes"
+  done
+
+  if [ -n "$achou" ]; then
+    echo "Placa compatível com $pkg encontrada ($achou). Instalando..." >>"$LOG"
+    if DEBIAN_FRONTEND=noninteractive apt-get install -y "$deb" >>"$LOG" 2>&1; then
+      echo "$pkg instalado." >>"$LOG"
+      [ "$pkg" = "bcmwl-kernel-source" ] && modprobe wl 2>>"$LOG"
+    else
+      echo "FALHA ao instalar $pkg (veja acima)." >>"$LOG"
+    fi
+  fi
+done
+exit 0

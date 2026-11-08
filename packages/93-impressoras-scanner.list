@@ -1,0 +1,3 @@
+# Impressoras e scanners (útil para testar periféricos de cliente)
+cups printer-driver-all hplip print-manager system-config-printer
+sane-utils sane-airscan ipp-usb

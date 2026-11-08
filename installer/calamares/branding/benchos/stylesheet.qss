@@ -1,0 +1,13 @@
+/* Nova Informática BenchOS - visual do instalador (azul e preto) */
+#mainApp { background-color: #0b1220; }
+#sidebarApp { background-color: #05080f; }
+#sidebarMenuApp { background-color: #05080f; }
+QPushButton {
+    background-color: #1a2438; color: #ffffff;
+    border: 1px solid #2a3a58; border-radius: 6px; padding: 6px 18px;
+}
+QPushButton:hover   { background-color: #23314c; }
+QPushButton:default { background-color: #1e6fff; border-color: #1e6fff; }
+QPushButton:disabled { color: #6b7a94; }
+QProgressBar { border: 1px solid #2a3a58; border-radius: 6px; background: #0b1220; color: #ffffff; text-align: center; }
+QProgressBar::chunk { background-color: #1e6fff; border-radius: 5px; }

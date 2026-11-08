@@ -1,0 +1,3 @@
+# Estabilidade e desempenho em qualquer máquina
+intel-microcode amd64-microcode
+systemd-zram-generator
