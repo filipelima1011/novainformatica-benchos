@@ -136,6 +136,6 @@ fi
 EOF
 
 msg "8/8 Gerando a ISO (UEFI + BIOS Legacy)"
-grub-mkrescue -o "$SAIDA/$NOME-$VERSAO.iso" "$IMAGE" -- -volid "BENCHOS" -iso-level 3
+grub-mkrescue -o "$SAIDA/$NOME-$VERSAO.iso" "$IMAGE" -- -volid "BENCHOS" -compliance iso_9660_level=3
 ls -lh "$SAIDA"
 echo "ISO pronta: $SAIDA/$NOME-$VERSAO.iso"
